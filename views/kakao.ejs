@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카카오톡</title>
+
+    <style>
+        .container{
+            width: 400px;
+            height: 600px;
+            margin: auto;
+            border: 1px solid black;
+
+            animation-name: con-ani;
+            animation-duration: 0.5s;
+        }
+        @keyframes con-ani {
+            from{
+                transform: scale(0);
+            }
+            to{
+                transform: scale(1);
+            }
+        }
+
+        .header{
+            height: 13%;
+            background-color: #A9bdce;
+            font-size: 0px;
+        }
+
+        .message{
+            height: 65%;
+            background-color: #b2c7d9; 
+            padding-top: 15px;     
+            overflow: scroll; 
+            -ms-overflow-style: none;
+        }
+        .message::-webkit-scrollbar { 
+            display: none;
+            width: 0 !important;
+        }
+
+        .input{
+            height: 19%;
+            background-color: white;
+        }
+        .profile{
+            height: 45px;
+            width: 45px;
+            border: 1px solid #aaaaaa;
+            border-radius: 18px;
+            margin: 14px;
+            vertical-align: middle;
+        }
+        .hd{
+            display: inline-block;
+            width: 50%;
+            font-size: 14px;
+        }
+        .x-icon{
+            height: 10px;
+            width: 10px;
+            float: right;
+            margin-bottom: 25px;
+            margin-right: 10px;
+        }
+        .in{
+            margin: 0%;
+            height: 60px;
+            width: 65%;
+            outline:none;
+            border:none;
+            position: relative;
+            left: 15px;
+            top : 8px;
+            resize: none;
+        }
+        .in::-webkit-scrollbar { 
+            display: none;
+            width: 0 !important;
+        }
+        .btn{
+            width: 55px;
+            height: 30px;
+            float: right;
+            margin-top: 10px;
+            margin-right: 15px;
+            background-color: #feeb42;
+            border:1px solid #ead732;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .btn:hover{
+            width: 55px;
+            height: 30px;
+            float: right;
+            margin-top: 10px;
+            margin-right: 15px;
+            background-color: #f3e140;
+            border:1px solid #ead732;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        
+        .other_message p{
+            margin-left: 20px;
+            margin-bottom: 5px;
+            position: relative;
+            animation-name:msg-ani;
+            animation-duration: 2s;
+            animation-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+        
+        .my_message p{
+            float: right;
+            margin-left: 20px;
+            margin-bottom: 5px;
+            position: relative;
+            animation-name:msg-ani;
+            animation-duration: 2s;
+            animation-timing-function: cubic-bezier(0.075, 0.82, 0.165, 1);
+        }
+
+
+        @keyframes msg-ani {
+            from{
+                top: 100px;
+            }
+
+            to{
+                top:0px;
+            }
+        }
+
+        
+        .other_message p::before{
+            content:"";
+            display: inline-block;
+            background-image: url(/img/kakao_profile.jpg);
+            background-size: 30px;
+            border-radius: 10px;
+            width: 30px;
+            height: 30px;
+            margin-right: 10px;
+            vertical-align: middle;
+            /*position: relative;
+            top: 7px;*/
+        }
+              
+
+        .talk{
+            background-color: white;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+
+        .mytalk{
+            float: right;
+            margin-right: 10px;
+            background-color: #feeb42;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+        
+        .talk_other{
+            margin-left: 15%;
+            background-color: white;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 16px;
+        }
+       
+        .time{
+            font-size: 12px;
+            margin:5px;
+            padding-top:10px;
+        }
+
+        .alert{
+            margin-right: 15px;
+            margin-left: 15px;
+            margin-bottom: 10px;
+            background-color: white;/* 까만색(0,0,0) */
+            float: center;
+            opacity:0.5; /* 20% 투명도 */
+            border-radius: 3px;
+        }
+
+        
+    </style>
+
+    <link rel="stylesheet" href="/css/reset.css">
+</head>
+<body>
+    
+    <div class="container">
+        <div class="header">
+            <div class="hd">
+                <img class="profile" src="/img/kakao_profile.jpg" >
+                <span class="talk_name">me</span>
+            </div>
+            <div class="hd">
+                <img class="x-icon" src="/img/x_icon.png">
+            </div>
+        </div>
+        <div class="message">
+    
+        </div>
+            
+        <div class="input">
+            <textarea class="in" id="msg" type="text" onkeyup="enterGo();"></textarea>
+            <button class="btn" id="btn" onclick="submit()">전송</button>
+        </div>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+
+    <script>
+        let socket = io();
+    
+        let myname = "";
+
+        const msg = document.querySelector("#msg")
+        const msgbox = document.querySelector(".message")
+        const enterGo = () => {
+            if(window.event.keyCode == 13){
+                submit();
+            }
+            //윈도우 키보드 값에 고유의 숫자가 있음. 13은 엔터임
+        };
+
+        const submit = () => {
+            socket.emit('send message', msg.value);
+            msg.value = "";
+        }
+
+
+        socket.on('enter message',function(alert){
+            msgbox.insertAdjacentHTML("beforeend",`<div class="alert"><p align="center">${alert}</p>`);
+            //$('#talk_name').appned(`,${alert.name}`)
+        });
+
+
+        socket.on('create name',function(name){
+            myname = name;
+        });
+
+        socket.on('receive message', function(msg){
+            var now = new Date();
+            var hours = now.getHours();
+            var minutes = now.getMinutes();
+
+            if(msg.name == myname){
+                msgbox.insertAdjacentHTML("beforeend",`<div class="my_message"><p><span class="time">${hours}:${minutes}</sapn> <span class="mytalk">${msg.text}</span></p><br/><br/>`)
+            }else {
+                msgbox.insertAdjacentHTML("beforeend",`<div class="other_message"><p><span style="font-size: 13px">${msg.name}</span></p><span class="talk_other">${msg.text}</span><span class="time">${hours}:${minutes}</sapn></div><br/>`)
+            }
+            $('.message').scrollTop($('.message')[0].scrollHeight);
+        })
+
+
+    </script>
+</body>
+</html>

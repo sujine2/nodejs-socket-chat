@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <title>Document</title>
+    <script>
+        let socket = io();
+        socket.on('create name', function(name){
+            $("#name").val(name);
+        })
+        $(document).ready(function(){
+            $('#chat').on('submit', function(e){
+                e.preventDefault(); // 화면이 바뀌면서 데이터 전송, form submit 방식을 끊고 소켓으로 전송하기 위함
+                socket.emit('send message', $('#name').val(), $('#message').val());
+                $('message').val("").focus(); //submit 할 내용은 name 과 message 두 개 이기 때문에 ( 밑에 chat )
+            }) //submit 이 싱행되면 아래 함수를 해라
+
+            socket.on('receive message', function(msg){
+                $('#chatLog').append(msg+'\n');
+                $('#chatLog').scrollTop($('#chatLog')[0].scrollHeight);
+            })
+
+            $('#name').change(function(){
+                socket.emit('change name', $('#name').val());
+            })
+        })
+
+    </script>
+    <style>
+        .chat_log { width:95%; height:200px;}
+        .name{width:10%;}
+        .message{width:70%;}
+        .chat{width:10%;}
+    </style>
+    <script>
+        
+        socket.on('news', function(data){ //news 이벤트 생성
+            console.log(data); //브라우저에서 출력
+            socket.emit('client login', {clientData: '클라이언트 접속'}) //서버에서출력
+        })
+    </script>
+    
+</head>
+<body>
+
+    <div>
+        <textarea id='chatLog' class='chat_log' readonly></textarea>
+    </div>
+    <form id='chat'>
+        <input id='name' class='name' type='text'>
+        <input id='message' class="message" type='text'>
+        <input type='submit' class="chat" value='send'>
+    </form>
+    
+</body>
+</html>
